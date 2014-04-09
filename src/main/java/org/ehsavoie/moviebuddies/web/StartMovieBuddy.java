@@ -5,9 +5,11 @@
  */
 package org.ehsavoie.moviebuddies.web;
 
+import org.ehsavoie.moviebuddies.model.LoadData;
 import io.undertow.Handlers;
 import io.undertow.Undertow;
 import io.undertow.server.handlers.PathHandler;
+import io.undertow.server.handlers.resource.ClassPathResourceManager;
 import io.undertow.servlet.Servlets;
 import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.DeploymentManager;
@@ -31,17 +33,21 @@ public class StartMovieBuddy {
 
     public static void startServer(final int port, final String hostName, final String homeDir) throws ServletException {
         DeploymentInfo servletBuilder = Servlets.deployment()
-                .setClassLoader(MovieBuddyServlet.class.getClassLoader())
+                .setClassLoader(SearchMoviesServlet.class.getClassLoader())
                 .setContextPath(MYAPP)
+                .addWelcomePage("index.html")
+                .setResourceManager(new ClassPathResourceManager(SearchMoviesServlet.class.getClassLoader()))
                 .setDeploymentName("moviebuddy.war")
                 .addListener(new ListenerInfo(LoadData.class))
                 .addServlets(
                         Servlets.servlet("Movies", SearchMoviesServlet.class)
                         .addMapping("/movies/search")
-                        .addMapping("/movies/search/*"),
+                        .addMapping("/movies/search/*")
+                        .setAsyncSupported(true),
                         Servlets.servlet("Users", SearchUsersServlet.class)
                         .addMapping("/users")
-                        .addMapping("/users/*"));
+                        .addMapping("/users/*")
+                        .setAsyncSupported(true));
 
         DeploymentManager manager = Servlets.defaultContainer().addDeployment(servletBuilder);
         manager.deploy();

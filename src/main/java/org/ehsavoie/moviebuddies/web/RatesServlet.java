@@ -7,21 +7,26 @@ package org.ehsavoie.moviebuddies.web;
 
 import java.io.IOException;
 import java.util.List;
+import javax.servlet.AsyncContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.ehsavoie.moviebuddies.model.JsonItem;
+import org.ehsavoie.moviebuddies.model.JsonLoader;
+import org.ehsavoie.moviebuddies.model.LoadData;
+import org.ehsavoie.moviebuddies.model.Movie;
+import org.ehsavoie.moviebuddies.model.RateMovie;
+import org.ehsavoie.moviebuddies.model.User;
 
 /**
  *
  * @author Emmanuel Hugonnet (ehsavoie) <emmanuel.hugonnet@gmail.com>
  */
-public abstract class MovieBuddyServlet extends HttpServlet {
-
-    protected boolean isLimit(int count, int limit) {
-        return limit > 0 && count >= limit;
-    }
+@WebServlet(name = "Rates", urlPatterns = {"/rates"}, asyncSupported = true)
+public class RatesServlet extends HttpServlet {
 
     protected List<Movie> getMovies(ServletRequest request) {
         return (List<Movie>) request.getServletContext().getAttribute(LoadData.LOADED_MOVIES);
@@ -30,9 +35,6 @@ public abstract class MovieBuddyServlet extends HttpServlet {
     protected List<User> getUsers(ServletRequest request) {
         return (List<User>) request.getServletContext().getAttribute(LoadData.LOADED_USERS);
     }
-
-    protected abstract void processRequest(final HttpServletRequest request, final HttpServletResponse response)
-            throws ServletException, IOException;
 
 // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
     /**
@@ -46,7 +48,8 @@ public abstract class MovieBuddyServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        final String[] params = URLParser.parse("", request);
+        final AsyncContext acontext = request.startAsync();
     }
 
     /**
@@ -60,17 +63,9 @@ public abstract class MovieBuddyServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        List<JsonItem> items = JsonLoader.load(request.getInputStream());
+        final AsyncContext acontext = request.startAsync();
+        acontext.start(new RateMovie(acontext, items.get(0), getUsers(request), getMovies(request)));
     }
-
-    /**
-     * Returns a short description of the servlet.
-     *
-     * @return a String containing servlet description
-     */
-    @Override
-    public String getServletInfo() {
-        return "Short description";
-    }// </editor-fold>
 
 }
