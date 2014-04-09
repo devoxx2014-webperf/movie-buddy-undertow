@@ -5,7 +5,6 @@
  */
 package org.ehsavoie.moviebuddies.web;
 
-import org.ehsavoie.moviebuddies.model.LoadData;
 import io.undertow.Handlers;
 import io.undertow.Undertow;
 import io.undertow.server.handlers.PathHandler;
@@ -15,6 +14,7 @@ import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.DeploymentManager;
 import io.undertow.servlet.api.ListenerInfo;
 import javax.servlet.ServletException;
+import org.ehsavoie.moviebuddies.model.LoadData;
 
 /**
  *
@@ -28,7 +28,7 @@ public class StartMovieBuddy {
      * @param args the command line arguments
      */
     public static void main(String[] args) throws ServletException {
-        startServer(8080, "localhost", System.getProperty("user.home"));
+        startServer(Integer.parseInt(System.getProperty("app.port", "8080")), "0.0.0.0", System.getProperty("user.home"));
     }
 
     public static void startServer(final int port, final String hostName, final String homeDir) throws ServletException {
