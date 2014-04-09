@@ -36,7 +36,6 @@ public class ComputeUserShared implements Runnable {
             User user1 = findUserById(userId1, allUsers);
             User user2 = findUserById(userId2, allUsers);
             List<String> result = new LinkedList<>();
-            result.add(("["));
             if (user1.rates != null && !user1.rates.isEmpty() && user2.rates != null && !user2.rates.isEmpty()) {
                 HashSet<Movie> set = new HashSet<>();
                 set.addAll(user1.rates.keySet());
@@ -45,8 +44,7 @@ public class ComputeUserShared implements Runnable {
                     result.add(movie.toString());
                 }
             }
-            result.add(("]"));
-            acontext.getResponse().getWriter().write(String.join(", ", result));
+            acontext.getResponse().getWriter().write("[" + String.join(", ", result) + "]");
             acontext.complete();
         } catch (IOException ex) {
             throw new RuntimeException(ex);

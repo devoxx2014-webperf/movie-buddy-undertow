@@ -41,12 +41,16 @@ public class StartMovieBuddy {
                 .addListener(new ListenerInfo(LoadData.class))
                 .addServlets(
                         Servlets.servlet("Movies", SearchMoviesServlet.class)
-                        .addMapping("/movies/search")
-                        .addMapping("/movies/search/*")
+                        .addMapping("/movies")
+                        .addMapping("/movies/*")
                         .setAsyncSupported(true),
                         Servlets.servlet("Users", SearchUsersServlet.class)
                         .addMapping("/users")
                         .addMapping("/users/*")
+                        .setAsyncSupported(true),
+                        Servlets.servlet("Rates", SearchUsersServlet.class)
+                        .addMapping("/rates")
+                        .addMapping("/rates/*")
                         .setAsyncSupported(true));
 
         DeploymentManager manager = Servlets.defaultContainer().addDeployment(servletBuilder);

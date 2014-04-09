@@ -5,7 +5,6 @@
  */
 package org.ehsavoie.moviebuddies.model;
 
-import org.ehsavoie.moviebuddies.model.Movie;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
@@ -33,7 +32,6 @@ public class SearchMoviesByGenre implements Runnable {
     @Override
     public void run() {
         List<String> result = new LinkedList<>();
-        result.add(("["));
         int count = 0;
         for (Movie movie : allMovies) {
             if (isLimit(count, limit)) {
@@ -44,9 +42,8 @@ public class SearchMoviesByGenre implements Runnable {
                 result.add(movie.toString());
             }
         }
-        result.add(("]"));
         try {
-           acontext.getResponse().getWriter().write(String.join(", ", result));
+           acontext.getResponse().getWriter().write("[" + String.join(", ", result) + "]");
            acontext.complete();
         } catch (IOException ex) {
             throw new RuntimeException(ex);

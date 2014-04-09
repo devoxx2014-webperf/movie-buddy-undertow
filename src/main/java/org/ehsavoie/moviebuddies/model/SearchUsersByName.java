@@ -32,7 +32,6 @@ public class SearchUsersByName implements Runnable {
     @Override
     public void run() {
         List<String> result = new LinkedList<>();
-        result.add(("["));
         int count = 0;
         for (User user : allUsers) {
             if (isLimit(count, limit)) {
@@ -43,9 +42,8 @@ public class SearchUsersByName implements Runnable {
                 result.add(user.toString());
             }
         }
-        result.add(("]"));
         try {
-           acontext.getResponse().getWriter().write(String.join(", ", result));
+           acontext.getResponse().getWriter().write("[" + String.join(", ", result) + "]");
            acontext.complete();
         } catch (IOException ex) {
             throw new RuntimeException(ex);

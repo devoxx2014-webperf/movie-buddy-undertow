@@ -5,12 +5,6 @@
  */
 package org.ehsavoie.moviebuddies.web;
 
-import org.ehsavoie.moviebuddies.model.SearchMoviesByGenre;
-import org.ehsavoie.moviebuddies.model.SearchAllMovies;
-import org.ehsavoie.moviebuddies.model.User;
-import org.ehsavoie.moviebuddies.model.Movie;
-import org.ehsavoie.moviebuddies.model.LoadData;
-import org.ehsavoie.moviebuddies.model.SearchMoviesByTitle;
 import java.io.IOException;
 import java.util.List;
 import javax.servlet.AsyncContext;
@@ -20,12 +14,19 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.ehsavoie.moviebuddies.model.LoadData;
+import org.ehsavoie.moviebuddies.model.Movie;
+import org.ehsavoie.moviebuddies.model.SearchAllMovies;
+import org.ehsavoie.moviebuddies.model.SearchMoviesByActors;
+import org.ehsavoie.moviebuddies.model.SearchMoviesByGenre;
+import org.ehsavoie.moviebuddies.model.SearchMoviesByTitle;
+import org.ehsavoie.moviebuddies.model.User;
 
 /**
  *
  * @author Emmanuel Hugonnet (ehsavoie) <emmanuel.hugonnet@gmail.com>
  */
-@WebServlet(name = "Movies", urlPatterns = {"/movies/search"}, asyncSupported = true)
+@WebServlet(name = "Movies", urlPatterns = {"/movies"}, asyncSupported = true)
 public class SearchMoviesServlet extends HttpServlet {
     /*
      POST /rates: enregistre un vote d'un utilisateur pour un film. Le body est formatté: {userId: u, movieId: m, rate: r}. renvoie vers /rates/:userId
@@ -49,29 +50,33 @@ public class SearchMoviesServlet extends HttpServlet {
         response.setContentType("application/json");
         final List<Movie> movies = getMovies(request);
         final String[] params = URLParser.parse("", request);
-        final int limit;
-        if (params.length > 2) {
-            limit = Integer.parseInt(params[2]);
-        } else {
-            limit = -1;
-        }
+        final int limit= params.length > 3 ? Integer.parseInt(params[3]) : -1;
         final AsyncContext acontext = request.startAsync();
         switch (params[0]) {
-            case "title": {
-                acontext.start(new SearchMoviesByTitle(acontext, params[1], getMovies(request), limit));
-            }
-            break;
-            case "actors": {
-                acontext.start(new SearchMoviesByGenre(acontext, params[1], getMovies(request), limit));
-            }
-            break;
-            case "genre": {
-                 acontext.start(new SearchMoviesByGenre(acontext, params[1], getMovies(request), limit));
-            }
-            break;
+            case "search":
+                final String criteria = params.length > 1 ? params[1] : "";
+                switch (criteria) {
+                    case "title": {
+                        acontext.start(new SearchMoviesByTitle(acontext, params[2], movies, limit));
+                    }
+                    break;
+                    case "actors": {
+                        acontext.start(new SearchMoviesByActors(acontext, params[2], movies, limit));
+                    }
+                    break;
+                    case "genre": {
+                        acontext.start(new SearchMoviesByGenre(acontext, params[2], movies, limit));
+                    }
+                    default: {
+                        acontext.start(new SearchAllMovies(acontext));
+                    }
+                    break;
+                }
+                break;
             default: {
                 acontext.start(new SearchAllMovies(acontext));
             }
+            break;
         }
     }
 
