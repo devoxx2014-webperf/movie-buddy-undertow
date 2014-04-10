@@ -50,7 +50,7 @@ public class SearchMoviesServlet extends HttpServlet {
         response.setContentType("application/json");
         final List<Movie> movies = getMovies(request);
         final String[] params = URLParser.parse("", request);
-        final int limit= params.length > 3 ? Integer.parseInt(params[3]) : -1;
+        final int limit = params.length > 3 ? Integer.parseInt(params[3]) : -1;
         final AsyncContext acontext = request.startAsync();
         switch (params[0]) {
             case "search":
@@ -67,6 +67,7 @@ public class SearchMoviesServlet extends HttpServlet {
                     case "genre": {
                         acontext.start(new SearchMoviesByGenre(acontext, params[2], movies, limit));
                     }
+                    break;
                     default: {
                         acontext.start(new SearchAllMovies(acontext));
                     }
