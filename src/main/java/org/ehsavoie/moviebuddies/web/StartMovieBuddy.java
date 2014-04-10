@@ -48,7 +48,7 @@ public class StartMovieBuddy {
                         .addMapping("/users")
                         .addMapping("/users/*")
                         .setAsyncSupported(true),
-                        Servlets.servlet("Rates", SearchUsersServlet.class)
+                        Servlets.servlet("Rates", RatesServlet.class)
                         .addMapping("/rates")
                         .addMapping("/rates/*")
                         .setAsyncSupported(true));
