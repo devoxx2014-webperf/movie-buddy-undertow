@@ -38,7 +38,7 @@ public class RateService {
             List<String> result = new LinkedList<>();
             if (user.rates != null) {
                 user.rates.entrySet().stream().forEach((rate) -> {
-                    result.add( rate.getKey().id + ": " + rate.getValue());
+                    result.add("\"" + rate.getKey().id + "\": " + rate.getValue());
                 });
             }
             return "{" + String.join(", ", result) + "}";
