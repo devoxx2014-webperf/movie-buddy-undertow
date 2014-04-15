@@ -5,7 +5,7 @@
  */
 package org.ehsavoie.moviebuddies.model;
 
-import java.io.IOException;
+import io.undertow.util.Headers;
 import java.util.HashMap;
 import java.util.List;
 import javax.servlet.AsyncContext;
@@ -18,6 +18,7 @@ import static org.ehsavoie.moviebuddies.web.StartMovieBuddy.MYAPP;
  * @author Emmanuel Hugonnet (ehsavoie) <emmanuel.hugonnet@gmail.com>
  */
 public class RateMovie implements Runnable {
+
     private final AsyncContext ac;
     private final JsonItem item;
     private final List<User> allUsers;
@@ -39,12 +40,10 @@ public class RateMovie implements Runnable {
             user.rates = new HashMap<>();
         }
         user.rates.put(movie, item.getInt("rate"));
-        try {
-            ((HttpServletResponse)ac.getResponse()).sendRedirect(MYAPP + "/rates/" + user.id);
-            ac.complete();
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
-        }
+        ((HttpServletResponse) ac.getResponse()).setStatus(301);
+        ((HttpServletResponse) ac.getResponse()).setHeader(Headers.LOCATION_STRING, ac.getRequest().getScheme() + "://"
+                + ac.getRequest().getServerName() + ":" + ac.getRequest().getServerPort() + MYAPP + "/rates/" + user.id);
+        ac.complete();
     }
 
 }

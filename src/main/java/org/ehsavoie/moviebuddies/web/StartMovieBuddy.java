@@ -61,8 +61,12 @@ public class StartMovieBuddy {
         Undertow server = Undertow.builder()
                 .addHttpListener(port, hostName)
                 .setHandler(path)
+                .setBufferSize(1024 * 16)
+                .setWorkerThreads(50)
                 .build();
         server.start();
     }
+
+    
 
 }

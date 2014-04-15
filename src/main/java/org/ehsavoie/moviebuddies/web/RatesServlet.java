@@ -20,6 +20,7 @@ import org.ehsavoie.moviebuddies.model.LoadData;
 import org.ehsavoie.moviebuddies.model.Movie;
 import org.ehsavoie.moviebuddies.model.RateMovie;
 import org.ehsavoie.moviebuddies.model.User;
+import org.ehsavoie.moviebuddies.model.UserRatesById;
 
 /**
  *
@@ -50,6 +51,7 @@ public class RatesServlet extends HttpServlet {
             throws ServletException, IOException {
         final String[] params = URLParser.parse("", request);
         final AsyncContext acontext = request.startAsync();
+        acontext.start(new UserRatesById(acontext, Integer.parseInt(params[0]), getUsers(request)));
     }
 
     /**
