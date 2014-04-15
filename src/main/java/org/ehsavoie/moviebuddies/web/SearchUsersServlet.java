@@ -7,22 +7,14 @@ package org.ehsavoie.moviebuddies.web;
 
 import java.io.IOException;
 import static java.lang.Integer.parseInt;
-import java.util.List;
 import javax.servlet.AsyncContext;
 import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.ehsavoie.moviebuddies.model.ComputeUserDistance;
-import org.ehsavoie.moviebuddies.model.ComputeUserShared;
-import org.ehsavoie.moviebuddies.model.LoadData;
-import org.ehsavoie.moviebuddies.model.Movie;
 import org.ehsavoie.moviebuddies.model.SearchAllUsers;
-import org.ehsavoie.moviebuddies.model.SearchUsersById;
-import org.ehsavoie.moviebuddies.model.SearchUsersByName;
-import org.ehsavoie.moviebuddies.model.User;
+import org.ehsavoie.moviebuddies.model.UserService;
 
 /**
  *
@@ -53,51 +45,37 @@ public class SearchUsersServlet extends HttpServlet {
     protected void processRequest(final HttpServletRequest request, final HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("application/json");
-        final List<User> users = getUsers(request);
         final String[] params = URLParser.parse("", request);
-        final AsyncContext acontext = request.startAsync();
         switch (params[0]) {
             case "search": {
                 final int limit;
                 if (params.length > 2) {
                     limit = Integer.parseInt(params[2]);
                 } else {
-                    limit = -1;
+                    limit = Integer.MAX_VALUE;
                 }
-                acontext.start(new SearchUsersByName(acontext, params[1], getUsers(request), limit));
+                response.getWriter().write(UserService.INSTANCE.searchUserByName(params[1], limit));
             }
             break;
             case "": {
+                final AsyncContext acontext = request.startAsync();
                 acontext.start(new SearchAllUsers(acontext));
             }
             break;
             case "share": {
-                acontext.start(new ComputeUserShared(acontext, parseInt(params[1]), parseInt(params[2]), users));
+                response.getWriter().write(UserService.INSTANCE.computeShare(parseInt(params[1]), parseInt(params[2])));
             }
             break;
             case "distance": {
-                acontext.start(new ComputeUserDistance(acontext, parseInt(params[1]), parseInt(params[2]), users));
+                response.getWriter().write(UserService.INSTANCE.computeDistance(parseInt(params[1]), parseInt(params[2])));
             }
             break;
             default: {
-                acontext.start(new SearchUsersById(acontext, parseInt(params[0]), users));
+                response.getWriter().write(UserService.INSTANCE.findUserById(parseInt(params[0])).toString());
             }
             break;
         }
     }
-
-    protected boolean isLimit(int count, int limit) {
-        return limit > 0 && count >= limit;
-    }
-
-    protected List<Movie> getMovies(ServletRequest request) {
-        return (List<Movie>) request.getServletContext().getAttribute(LoadData.LOADED_MOVIES);
-    }
-
-    protected List<User> getUsers(ServletRequest request) {
-        return (List<User>) request.getServletContext().getAttribute(LoadData.LOADED_USERS);
-    }
-
 // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
     /**
      * Handles the HTTP <code>GET</code> method.

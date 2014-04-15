@@ -6,21 +6,14 @@
 package org.ehsavoie.moviebuddies.web;
 
 import java.io.IOException;
-import java.util.List;
 import javax.servlet.AsyncContext;
 import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.ehsavoie.moviebuddies.model.LoadData;
-import org.ehsavoie.moviebuddies.model.Movie;
+import org.ehsavoie.moviebuddies.model.MovieService;
 import org.ehsavoie.moviebuddies.model.SearchAllMovies;
-import org.ehsavoie.moviebuddies.model.SearchMoviesByActors;
-import org.ehsavoie.moviebuddies.model.SearchMoviesByGenre;
-import org.ehsavoie.moviebuddies.model.SearchMoviesByTitle;
-import org.ehsavoie.moviebuddies.model.User;
 
 /**
  *
@@ -48,49 +41,37 @@ public class SearchMoviesServlet extends HttpServlet {
     protected void processRequest(final HttpServletRequest request, final HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("application/json");
-        final List<Movie> movies = getMovies(request);
         final String[] params = URLParser.parse("", request);
-        final int limit = params.length > 3 ? Integer.parseInt(params[3]) : -1;
-        final AsyncContext acontext = request.startAsync();
+        final int limit = params.length > 3 ? Integer.parseInt(params[3]) : Integer.MAX_VALUE;
         switch (params[0]) {
             case "search":
                 final String criteria = params.length > 1 ? params[1] : "";
                 switch (criteria) {
                     case "title": {
-                        acontext.start(new SearchMoviesByTitle(acontext, params[2], movies, limit));
+                        response.getWriter().write(MovieService.INSTANCE.searchMovieByTitle(params[2], limit));
                     }
                     break;
                     case "actors": {
-                        acontext.start(new SearchMoviesByActors(acontext, params[2], movies, limit));
+                        response.getWriter().write(MovieService.INSTANCE.searchMovieByActor(params[2], limit));
                     }
                     break;
                     case "genre": {
-                        acontext.start(new SearchMoviesByGenre(acontext, params[2], movies, limit));
+                        response.getWriter().write(MovieService.INSTANCE.searchMovieByGenre(params[2], limit));
                     }
                     break;
                     default: {
+                        final AsyncContext acontext = request.startAsync();
                         acontext.start(new SearchAllMovies(acontext));
                     }
                     break;
                 }
                 break;
             default: {
+                final AsyncContext acontext = request.startAsync();
                 acontext.start(new SearchAllMovies(acontext));
             }
             break;
         }
-    }
-
-    protected boolean isLimit(int count, int limit) {
-        return limit > 0 && count >= limit;
-    }
-
-    protected List<Movie> getMovies(ServletRequest request) {
-        return (List<Movie>) request.getServletContext().getAttribute(LoadData.LOADED_MOVIES);
-    }
-
-    protected List<User> getUsers(ServletRequest request) {
-        return (List<User>) request.getServletContext().getAttribute(LoadData.LOADED_USERS);
     }
 
 // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">

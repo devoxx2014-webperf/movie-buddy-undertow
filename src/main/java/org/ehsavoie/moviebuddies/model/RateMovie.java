@@ -10,7 +10,6 @@ import java.util.HashMap;
 import java.util.List;
 import javax.servlet.AsyncContext;
 import javax.servlet.http.HttpServletResponse;
-import static org.ehsavoie.moviebuddies.model.Movie.findMovieById;
 import static org.ehsavoie.moviebuddies.web.StartMovieBuddy.MYAPP;
 
 /**
@@ -34,8 +33,8 @@ public class RateMovie implements Runnable {
     @Override
     public void run() {
 
-        User user = User.findUserById(item.getInt("userId"), allUsers);
-        Movie movie = findMovieById(item.getInt("movieId"), allMovies);
+        User user = UserService.INSTANCE.findUserById(item.getInt("userId"));
+        Movie movie = MovieService.INSTANCE.findMovieById(item.getInt("movieId"));
         if (user.rates == null) {
             user.rates = new HashMap<>();
         }

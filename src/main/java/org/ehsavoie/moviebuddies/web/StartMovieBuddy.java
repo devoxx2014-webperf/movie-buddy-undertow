@@ -12,9 +12,8 @@ import io.undertow.server.handlers.resource.ClassPathResourceManager;
 import io.undertow.servlet.Servlets;
 import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.DeploymentManager;
-import io.undertow.servlet.api.ListenerInfo;
 import javax.servlet.ServletException;
-import org.ehsavoie.moviebuddies.model.LoadData;
+import org.ehsavoie.moviebuddies.model.InitializeRates;
 
 /**
  *
@@ -38,7 +37,6 @@ public class StartMovieBuddy {
                 .addWelcomePage("index.html")
                 .setResourceManager(new ClassPathResourceManager(SearchMoviesServlet.class.getClassLoader()))
                 .setDeploymentName("moviebuddy.war")
-                .addListener(new ListenerInfo(LoadData.class))
                 .addServlets(
                         Servlets.servlet("Movies", SearchMoviesServlet.class)
                         .addMapping("/movies")
@@ -58,6 +56,8 @@ public class StartMovieBuddy {
         PathHandler path = Handlers.path(Handlers.redirect(MYAPP))
                 .addPrefixPath(MYAPP, manager.start());
 
+        InitializeRates.loadRate();
+
         Undertow server = Undertow.builder()
                 .addHttpListener(port, hostName)
                 .setHandler(path)
@@ -67,6 +67,6 @@ public class StartMovieBuddy {
         server.start();
     }
 
-    
+
 
 }

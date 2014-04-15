@@ -5,22 +5,18 @@
  */
 package org.ehsavoie.moviebuddies.web;
 
+import io.undertow.util.Headers;
 import java.io.IOException;
 import java.util.List;
-import javax.servlet.AsyncContext;
 import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.ehsavoie.moviebuddies.model.JsonItem;
 import org.ehsavoie.moviebuddies.model.JsonLoader;
-import org.ehsavoie.moviebuddies.model.LoadData;
-import org.ehsavoie.moviebuddies.model.Movie;
-import org.ehsavoie.moviebuddies.model.RateMovie;
-import org.ehsavoie.moviebuddies.model.User;
-import org.ehsavoie.moviebuddies.model.UserRatesById;
+import org.ehsavoie.moviebuddies.model.RateService;
+import static org.ehsavoie.moviebuddies.web.StartMovieBuddy.MYAPP;
 
 /**
  *
@@ -28,14 +24,6 @@ import org.ehsavoie.moviebuddies.model.UserRatesById;
  */
 @WebServlet(name = "Rates", urlPatterns = {"/rates"}, asyncSupported = true)
 public class RatesServlet extends HttpServlet {
-
-    protected List<Movie> getMovies(ServletRequest request) {
-        return (List<Movie>) request.getServletContext().getAttribute(LoadData.LOADED_MOVIES);
-    }
-
-    protected List<User> getUsers(ServletRequest request) {
-        return (List<User>) request.getServletContext().getAttribute(LoadData.LOADED_USERS);
-    }
 
 // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
     /**
@@ -50,8 +38,13 @@ public class RatesServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         final String[] params = URLParser.parse("", request);
-        final AsyncContext acontext = request.startAsync();
-        acontext.start(new UserRatesById(acontext, Integer.parseInt(params[0]), getUsers(request)));
+        String result = RateService.INSTANCE.findRateByUser(Integer.parseInt(params[0]));
+        if (result == null) {
+            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+        } else {
+            response.setContentType("application/json");
+            response.getWriter().write(result);
+        }
     }
 
     /**
@@ -66,8 +59,9 @@ public class RatesServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         List<JsonItem> items = JsonLoader.load(request.getInputStream());
-        final AsyncContext acontext = request.startAsync();
-        acontext.start(new RateMovie(acontext, items.get(0), getUsers(request), getMovies(request)));
+        String returnUrl = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort() + MYAPP + RateService.INSTANCE.rateMovie(items.get(0));
+        response.setStatus(301);
+        response.setHeader(Headers.LOCATION_STRING, returnUrl);
     }
 
 }
